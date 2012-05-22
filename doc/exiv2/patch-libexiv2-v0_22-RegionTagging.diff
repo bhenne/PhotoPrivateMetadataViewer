@@ -1,0 +1,155 @@
+Index: trunk/src/properties.cpp
+===================================================================
+--- trunk/src/properties.cpp	(Revision 2643)
++++ trunk/src/properties.cpp	(Arbeitskopie)
+@@ -91,6 +91,10 @@
+     extern const XmpPropertyInfo xmpPlusInfo[];
+     extern const XmpPropertyInfo xmpMediaProInfo[];
+     extern const XmpPropertyInfo xmpExpressionMediaInfo[];
++    extern const XmpPropertyInfo xmpMicrosoftPhotoInfo[];
++    extern const XmpPropertyInfo xmpMicrosoftPhotoRegionInfoInfo[];
++    extern const XmpPropertyInfo xmpMicrosoftPhotoRegionInfo[];
++    extern const XmpPropertyInfo xmpMWGRegionsInfo[];
+ 
+     extern const XmpNsInfo xmpNsInfo[] = {
+         // Schemas   -   NOTE: Schemas which the XMP-SDK doesn't know must be registered in XmpParser::initialize - Todo: Automate this
+@@ -117,6 +121,10 @@
+         { "http://ns.useplus.org/ldf/xmp/1.0/",           "plus",           xmpPlusInfo,      N_("PLUS License Data Format schema")           },
+         { "http://ns.iview-multimedia.com/mediapro/1.0/", "mediapro",       xmpMediaProInfo,  N_("iView Media Pro schema")                    },
+         { "http://ns.microsoft.com/expressionmedia/1.0/", "expressionmedia",xmpExpressionMediaInfo, N_("Expression Media schema")             },
++        { "http://ns.microsoft.com/photo/1.2/",              "MP",    xmpMicrosoftPhotoInfo,           N_("Microsoft Photo 1.2 schema")       },
++        { "http://ns.microsoft.com/photo/1.2/t/RegionInfo#", "MPRI",  xmpMicrosoftPhotoRegionInfoInfo, N_("Microsoft Photo RegionInfo schema")},
++        { "http://ns.microsoft.com/photo/1.2/t/Region#",     "MPReg", xmpMicrosoftPhotoRegionInfo,     N_("Microsoft Photo Region schema")    },
++        { "http://www.metadataworkinggroup.com/schemas/regions/", "mwg-rs", xmpMWGRegionsInfo,N_("Metadata Working Group Regions schema")     },
+ 
+         // Structures
+         { "http://ns.adobe.com/xap/1.0/g/",                   "xapG",    0, N_("Colorant structure")           },
+@@ -127,6 +135,7 @@
+         { "http://ns.adobe.com/xap/1.0/sType/ResourceRef#",   "stRef",   0, N_("ResourceRef structure")        },
+         { "http://ns.adobe.com/xap/1.0/sType/Version#",       "stVer",   0, N_("Version structure")            },
+         { "http://ns.adobe.com/xap/1.0/sType/Job#",           "stJob",   0, N_("Basic Job/Workflow structure") },
++        { "http://ns.adobe.com/xmp/sType/Area#",              "stArea",  0, N_("Area structure")               },
+ 
+         // Qualifiers
+         { "http://ns.adobe.com/xmp/Identifier/qual/1.0/", "xmpidq", 0, N_("Qualifier for xmp:Identifier") }
+@@ -937,6 +946,43 @@
+         { 0, 0, 0, invalidTypeId, xmpInternal, 0 }
+     };
+ 
++    extern const XmpPropertyInfo xmpMicrosoftPhotoInfo[] = {
++        { "RegionInfo", N_("RegionInfo"), "RegionInfo", xmpText, xmpInternal, N_("Microsoft Photo people-tagging metadata root") },
++        // End of list marker
++        { 0, 0, 0, invalidTypeId, xmpInternal, 0 }
++    };
++
++    extern const XmpPropertyInfo xmpMicrosoftPhotoRegionInfoInfo[] = {
++        { "DateRegionsValid", N_("DateRegionsValid"), "Date",       xmpText, xmpExternal, N_("Date the last region was created")  },
++        { "Regions",          N_("Regions"),          "bag Region", xmpBag,  xmpExternal, N_("Contains Regions/person tags") },
++        // End of list marker
++        { 0, 0, 0, invalidTypeId, xmpInternal, 0 }
++    };
++
++    extern const XmpPropertyInfo xmpMicrosoftPhotoRegionInfo[] = {
++        { "PersonDisplayName", N_("PersonDisplayName"), "Text", xmpText, xmpExternal, N_("Name of the person (in the given rectangle)")                               },
++        { "Rectangle",         N_("Rectangle"),         "Text", xmpText, xmpExternal, N_("Rectangle that identifies the person within the photo")                     },
++        { "PersonEmailDigest", N_("PersonEmailDigest"), "Text", xmpText, xmpExternal, N_("SHA-1 encrypted message hash of the person's Windows Live e-mail address"), },
++        { "PersonLiveCID",     N_("PersonLiveCID"),     "Text", xmpText, xmpExternal, N_("Signed decimal representation of the person's Windows Live CID")            },
++        // End of list marker
++        { 0, 0, 0, invalidTypeId, xmpInternal, 0 }
++    };
++
++    extern const XmpPropertyInfo xmpMWGRegionsInfo[] = {
++        { "Regions",             N_("Regions"),             "RegionInfo",       xmpText, xmpInternal,        N_("Main structure containing region based information")   },
++        { "AppliedToDimensions", N_("AppliedToDimensions"), "Dimensions",       xmpText, xmpExternal,        N_("Width and height of image when storing region data")   },
++        { "RegionList",          N_("RegionList"),          "bag RegionStruct", xmpBag,  xmpExternal,        N_("List of Region structures")                            },
++        { "Area",                N_("Area"),                "Area",             xmpText, xmpExternal,        N_("Descriptive markers of catalog items by content")      },
++        { "Type",                N_("Type"),                "closed Choice of Text", xmpText, xmpExternal,   N_("Type purpose of region (Face|Pet|Focus|BarCode)")      },
++        { "Name",                N_("Name"),                "Text",             xmpText, xmpExternal,        N_("Name/ short description of content in image region")   },
++        { "Description",         N_("Description"),         "Text",             xmpText, xmpExternal,        N_("Usage scenario for a given focus area (EvaluatedUsed|EvaluatedNotUsed|NotEvaluatedNotUsed)") },
++        { "FocusUsage",          N_("FocusUsage"),          "closed Choice of Text", xmpText, xmpExternal,   N_("Descriptive markers of catalog items by content")      },
++        { "BarCodeValue",        N_("BarCodeValue"),        "Text",             xmpText, xmpExternal,        N_("Decoded BarCode value string")                         },
++        { "Extensions",          N_("Extensions"),          "Text",             undefined, xmpInternal, N_("Any top level XMP property to describe the region content") },
++        // End of list marker
++        { 0, 0, 0, invalidTypeId, xmpInternal, 0 }
++    };
++
+     extern const XmpPrintInfo xmpPrintInfo[] = {
+         {"Xmp.crs.CropUnits",                 EXV_PRINT_TAG(crsCropUnits)   },
+         {"Xmp.exif.ApertureValue",            print0x9202                   },
+Index: trunk/src/xmp.cpp
+===================================================================
+--- trunk/src/xmp.cpp	(Revision 2643)
++++ trunk/src/xmp.cpp	(Arbeitskopie)
+@@ -410,6 +410,11 @@
+             SXMPMeta::RegisterNamespace("http://ns.useplus.org/ldf/xmp/1.0/", "plus");
+             SXMPMeta::RegisterNamespace("http://ns.iview-multimedia.com/mediapro/1.0/", "mediapro");
+             SXMPMeta::RegisterNamespace("http://ns.microsoft.com/expressionmedia/1.0/", "expressionmedia");
++            SXMPMeta::RegisterNamespace("http://ns.microsoft.com/photo/1.2/", "MP");
++            SXMPMeta::RegisterNamespace("http://ns.microsoft.com/photo/1.2/t/RegionInfo#", "MPRI");
++            SXMPMeta::RegisterNamespace("http://ns.microsoft.com/photo/1.2/t/Region#", "MPReg");
++            SXMPMeta::RegisterNamespace("http://www.metadataworkinggroup.com/schemas/regions/", "mwg-rs");
++            SXMPMeta::RegisterNamespace("http://ns.adobe.com/xmp/sType/Area#", "stArea");
+ #else
+             initialized_ = true;
+ #endif
+Index: trunk/src/doxygen.hpp.in
+===================================================================
+--- trunk/src/doxygen.hpp.in	(Revision 2643)
++++ trunk/src/doxygen.hpp.in	(Arbeitskopie)
+@@ -78,6 +78,10 @@
+   - <a href="tags-xmp-MicrosoftPhoto.html">MicrosoftPhoto schema</a>
+   - <a href="tags-xmp-mediapro.html">iView Media Pro schema</a>
+   - <a href="tags-xmp-expressionmedia.html">Microsoft Expression Media schema</a>
++  - <a href="tags-xmp-MP.html">Microsoft Photo 1.2 schema</a>
++  - <a href="tags-xmp-MPRI.html">Microsoft Photo RegionInfo schema</a>
++  - <a href="tags-xmp-MPReg.html">Microsoft Photo Region schema</a>
++  - <a href="tags-xmp-mwg-rs.html">Metadata Working Group Regions schema</a>
+ 
+   @section formats File Formats
+ 
+Index: trunk/doc/ChangeLog
+===================================================================
+--- trunk/doc/ChangeLog	(Revision 2643)
++++ trunk/doc/ChangeLog	(Arbeitskopie)
+@@ -6,6 +6,9 @@
+ 	         - Added version hex number to the output of "exiv2 -V".
+ 
+ * Exiv2 library
++        - 0000798: Added people/photo region tagging schemas
++	           MS Photo 1.2 RegionInfo and MWG Regions
++		   (Benjamin Henne)
+ 	- 0000785: Exif version 2.3 missing tag codes. (Patch by Jens Mueller)
+ 	- 0000782: Tamron 18-270mm lens. (Patch by Jens Mueller)
+ 	- 0000781: Exif 2.3 & DNG 1.2/1.3 tags. (Patch by Jens Mueller)
+Index: trunk/doc/templates/Makefile
+===================================================================
+--- trunk/doc/templates/Makefile	(Revision 2643)
++++ trunk/doc/templates/Makefile	(Arbeitskopie)
+@@ -130,7 +130,11 @@
+          xmp_iptcExt \
+          xmp_plus \
+          xmp_mediapro \
+-         xmp_expressionmedia
++         xmp_expressionmedia \
++         xmp_MP \
++         xmp_MPRI \
++         xmp_MPReg \
++         xmp_mwg-rs
+ 
+ TAGLIST = ../../src/taglist
+ 
+Index: trunk/doc/templates/__index2__
+===================================================================
+--- trunk/doc/templates/__index2__	(Revision 2643)
++++ trunk/doc/templates/__index2__	(Arbeitskopie)
+@@ -43,6 +43,10 @@
+     <li><a href="tags-xmp-MicrosoftPhoto.html"><span>MicrosoftPhoto</span></a></li>
+     <li><a href="tags-xmp-mediapro.html"><span>mediapro</span></a></li>
+     <li><a href="tags-xmp-expressionmedia.html"><span>expressionmedia</span></a></li>
++    <li><a href="tags-xmp-MP.html"><span>MP</span></a></li>
++    <li><a href="tags-xmp-MPRI.html"><span>MPRI</span></a></li>
++    <li><a href="tags-xmp-MPReg.html"><span>MPReg</span></a></li>
++    <li><a href="tags-xmp-mwg-rs.html"><span>mwg-rs</span></a></li>
+   </ul>
+ </div>
+ 

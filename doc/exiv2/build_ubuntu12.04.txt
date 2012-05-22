@@ -1,0 +1,15 @@
+using a fresh install of Ubuntu 12.04 LTS (Precise Pangolin) do
+
+ sudo apt-get install devscripts pkg-config
+
+ sudo apt-get build-dep libexiv2-11
+ apt-get source libexiv2-11
+ wget http://www.exiv2.org/exiv2-0.23.tar.gz
+ cd exiv2-0.22
+ uupdate ../exiv2-0.23.tar.gz
+ cd ../exiv2-0.23
+ sudo dpkg-buildpackage -us -uc -nc
+
+ sudo dpkg -i libexiv2-11_0.23-0ubuntu1_amd64.deb
+ sudo dpkg -i libexiv2-dev_0.23-0ubuntu1_amd64.deb
+ sudo dpkg -i exiv2_0.23-0ubuntu1_amd64.deb

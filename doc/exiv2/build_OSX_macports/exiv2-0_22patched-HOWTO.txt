@@ -1,0 +1,16 @@
+tested on OS X Snow Leopard
+
+1) local port tree
+   sudo vi  /opt/local/etc/macports/sources.conf
+   add "file://Users/henne/dev/ports"
+
+   mkdir -p ~/dev/ports/graphics/exiv2
+   cp /opt/local/var/macports/sources/rsync.macports.org/release/tarballs/ports/graphics/exiv2/Portfile ~/dev/ports/graphics/exiv2/Portfile
+   cd ~/dev/ports/graphics/exiv2/
+   # vi Portfile, see example exiv2-0_22patched-Portfile in this directory, 
+   #  my version has been marked as 0.22b insteaf of 0.22
+   #  added svn commands and pre-config to make config
+   portindex
+
+2) build and install
+   sudo port install exiv2 @0.22b

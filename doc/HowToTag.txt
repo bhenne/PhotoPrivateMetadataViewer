@@ -1,0 +1,17 @@
+The Metadata Working Group Region Schema (http://www.metadataworkinggroup.org/pdf/mwg_guidance.pdf)
+can be written to files by Google's Picasa nowadays. Additionally Picasa stores tagged faces in
+.picasa.ini files in the files' directory.
+
+The Microsoft Photo Region Information Schema (http://msdn.microsoft.com/en-us/library/ee719905%28VS.85%29.aspx 
+or http://metability.editme.com/mmf-scavenger-xmp-schemaex-MSPeopleTagging) can be written to files by
+Windows Live Photo Gallery.
+
+The exiv2 library and command line tool can be used to write the in file metadata
+using a patched version 0.22 as described at http://dev.exiv2.org/boards/3/topics/1039
+or using the version 0.23 or above.
+
+The pyexiv2 Python binding for libexv2 also can be used since its revision 373,
+which may be included in a release following version 0.3.2.
+
+Metadata is nice and useful, but also can be harmful.
+Use it with caution.
