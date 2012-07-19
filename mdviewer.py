@@ -94,7 +94,7 @@ class MDTreePanel(wx.Panel):
         def _recur(datanode, treectrlnode):
             if len(datanode.children) > 0:
                 for currentdatanode in datanode.children:
-                    data = ': '+str(currentdatanode.data) if (currentdatanode.data is not None) and (currentdatanode.data != '') else ''
+                    data = u': '+unicode(currentdatanode.data) if (currentdatanode.data is not None) and (unicode(currentdatanode.data) != u'') else u''
                     child = self.tree.AppendItem(treectrlnode, currentdatanode.name+data)
                     self.tree.SetItemFont(child, f)
                     _recur(currentdatanode, child)
@@ -412,9 +412,24 @@ class MainWindow(wx.Frame):
         self.SetTitle(self.frameTitlePrefix+frameTitleSuffix)
         self.lastImageLoadedDir = self.dirname
         if self.simpleView == False:
-          self.mdtree = private_metadata.MetadataTree(self.md, nsprefix=False)
-          self.mdtreepanel.setMetadata(self.mdtree)
-          self.privmdpanel.text.SetValue(str(self.image_metadata))
+            self.mdtree = private_metadata.MetadataTree(self.md, nsprefix=False)
+            self.mdtreepanel.setMetadata(self.mdtree)
+            self.privmdpanel.text.SetValue(str(self.image_metadata))
+            if 'WGS84' in self.image_metadata:
+                loc = self.image_metadata['WGS84']
+                self.mappanel.greyedOverlay = None
+                self.mappanel.points = [[loc[0], loc[1]]]
+                self.mappanel.point_colours = ['red'] * len(self.mappanel.points)
+                #TODO: read location accuracy from GPSDOP and draw rectangle/circle
+                #self.mappanel.rectangles = [[0, 0, 1, 1]]
+                #self.mappanel.rectangle_colours = ['red']
+                self.mappanel.center = self.mappanel.points[0]
+                self.mappanel.Refresh()
+            else:
+                self.mappanel.greyedOverlay = [ 50, 80 ]
+                self.mappanel.points = []
+                self.mappanel.rectangles = []
+                self.mappanel.Refresh()
 
 
     def parseMetadata(self, md, picasa_faces):
@@ -455,6 +470,8 @@ class MainWindow(wx.Frame):
         else:
             self.image_rects = None
         self.image_metadata['people'] = sorted(people)
+	if md.privateMetadata['location:wgs84'].value is not None:
+		self.image_metadata['WGS84'] = md.privateMetadata['location:wgs84'].value
 
     def ImplOpenDirFile(self, directory, filename, type='file'):
             if type == 'file':

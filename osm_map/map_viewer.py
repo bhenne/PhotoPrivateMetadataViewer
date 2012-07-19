@@ -69,6 +69,7 @@ class MapPanel(wx.Panel):
         self.point_colours = []
         self.rectangles = []
         self.rectangle_colours = []
+        self.greyedOverlay = None    #: tuple [rga value, alpha]
         self.current_point = 0
         self.current_rectangle = 0
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
@@ -168,6 +169,11 @@ class MapPanel(wx.Panel):
             self.draw_point_list(dc, self.points, self.point_colours)
         if self.rectangles:
             self.draw_rectangle_list(dc, self.rectangles, self.rectangle_colours)
+        if self.greyedOverlay is not None:
+            dc.DrawBitmap(wx.EmptyBitmapRGBA(size[0], size[1], 
+                                             self.greyedOverlay[0], self.greyedOverlay[0], self.greyedOverlay[0], 
+                                             self.greyedOverlay[1]), 
+                          0, 0)
         del dc
         
     def OnSize(self, event):

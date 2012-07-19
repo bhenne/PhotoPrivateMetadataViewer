@@ -196,6 +196,49 @@ class MdMPRI(Metadatum):
             self.value = None
 
 
+class WGS84Location(Metadatum):
+
+    def __init__(self, value):
+        super(WGS84Location, self).__init__(name='Exif-GPSInfo', value=value,
+                                             key='Exif.GPSInfo',
+                                             description='WGS-84 Latitude/Longitude Location')
+    def parse(self, imageMetadata):
+        latref = 0
+        if 'Exif.GPSInfo.GPSLatitudeRef' in imageMetadata:
+	        if imageMetadata['Exif.GPSInfo.GPSLatitudeRef'].value == 'N':
+                    latref = 1
+	        elif imageMetadata['Exif.GPSInfo.GPSLatitudeRef'].value == 'S':
+                    latref = -1
+	        else:
+  	            print 'not interpretable GPSLatitudeRef:', imageMetadata['Exif.GPSInfo.GPSLatitudeRef'].value
+        lonref = 0
+        if 'Exif.GPSInfo.GPSLongitudeRef' in imageMetadata:
+	        if imageMetadata['Exif.GPSInfo.GPSLongitudeRef'].value == 'E':
+                    lonref = 1
+	        elif imageMetadata['Exif.GPSInfo.GPSLongitudeRef'].value == 'W':
+    	            lonref = -1
+	        else:
+  	            print 'not interpretable GPSLongitudeRef:', imageMetadata['Exif.GPSInfo.GPSLongitudeRef'].value
+        flat = 0
+        if 'Exif.GPSInfo.GPSLatitude' in imageMetadata:
+	    lat = imageMetadata['Exif.GPSInfo.GPSLatitude'].value
+	    flat = float(lat[0]) + float(lat[1])/60 + float(lat[2])/3600
+        flon = 0
+        if 'Exif.GPSInfo.GPSLongitude' in imageMetadata:
+            lon = imageMetadata['Exif.GPSInfo.GPSLongitude'].value
+            flon = float(lon[0]) + float(lon[1])/60 + float(lon[2])/3600
+        fdop = 0
+        if 'Exif.GPSInfo.GPSDOP' in imageMetadata:
+            dop = imageMetadata['Exif.GPSInfo.GPSDOP'].value
+            fdop = float(dop[0]) + float(dop[1])/60 + float(dop[2])/3600
+        falt = 0
+        #TODO: parse GPSDOP from metadata
+        if (flat != 0) and (flon != 0):
+            self.value = [ flat*latref, flon*lonref, falt , fdop] #: lat, lon, alt, dop
+        else:
+            self.value = None
+
+    
 class PrivateMetadata(pyexiv2.ImageMetadata):
     
     def __init__(self, filename=None):
@@ -214,6 +257,7 @@ class PrivateMetadata(pyexiv2.ImageMetadata):
         self.privateMetadata['people:iptc4ext'] = MdIptc4ExtPpl(self)
         self.privateMetadata['people:mwgrs'] = MdMwgRs(self)
         self.privateMetadata['people:mpri'] = MdMPRI(self)
+        self.privateMetadata['location:wgs84'] = WGS84Location(self)
 
 
 class MetadataTree(object):
