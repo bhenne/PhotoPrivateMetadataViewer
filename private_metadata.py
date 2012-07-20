@@ -227,12 +227,16 @@ class WGS84Location(Metadatum):
         if 'Exif.GPSInfo.GPSLongitude' in imageMetadata:
             lon = imageMetadata['Exif.GPSInfo.GPSLongitude'].value
             flon = float(lon[0]) + float(lon[1])/60 + float(lon[2])/3600
+        falt = 0
+        if 'Exif.GPSInfo.GPSAltitude' in imageMetadata:
+            falt = float(imageMetadata['Exif.GPSInfo.GPSAltitude'].value)
+            if 'Exif.GPSInfo.GPSAltitudeRef' in imageMetadata:
+                if int(imageMetadata['Exif.GPSInfo.GPSAltitudeRef'].value) == 1:
+                    falt *= -1
         fdop = 0
         if 'Exif.GPSInfo.GPSDOP' in imageMetadata:
             dop = imageMetadata['Exif.GPSInfo.GPSDOP'].value
-            fdop = float(dop[0]) + float(dop[1])/60 + float(dop[2])/3600
-        falt = 0
-        #TODO: parse GPSDOP from metadata
+            fdop = float(dop)
         if (flat != 0) and (flon != 0):
             self.value = [ flat*latref, flon*lonref, falt , fdop] #: lat, lon, alt, dop
         else:
@@ -260,11 +264,20 @@ class PrivateMetadata(pyexiv2.ImageMetadata):
         self.privateMetadata['location:wgs84'] = WGS84Location(self)
 
 
+def unifix(any):
+    if any is None:
+        return u''
+    try:
+        return unicode(any)
+    except:
+        return unicode(any, errors='replace')
+
+
 class MetadataTree(object):
 
     class Node (object):
-        def __init__(self, data, name='', parent=None):
-            self.name = name
+        def __init__(self, data, name=u'', parent=None):
+            self.name = unifix(name)
             self.data = data
             self.parent = parent
             self.children = []
@@ -276,14 +289,14 @@ class MetadataTree(object):
             return [child for child in self.children if child.name == name]
         def __str__(self, depth=0):
             if self.parent is not None:
-                myname = '%s%s: %s\n' % (' '*depth, self.name, self.data)
+                myname = u'%s%s: %s\n' % (u' '*depth, unifix(self.name), unifix(self.data))
             else:
-                myname = ''
+                myname = u''
                 depth=-1
-            mychildren = ''
+            mychildren = u''
             for child in self.children:
                 mychildren += child.__str__(depth=depth+1)
-            ret = '%s%s' % (myname, mychildren)
+            ret = u'%s%s' % (myname, mychildren)
             if self.parent is not None:
                 return ret
             else:
@@ -310,7 +323,7 @@ class MetadataTree(object):
             else:
                 return [e.split(':')[-1] for e in res]
         if len(metadata.keys()) > 0:
-            self.root = self.Node(data=None, name='', parent=None)
+            self.root = self.Node(data=None, name=u'', parent=None)
             for k, v in metadata.iteritems():
                 currentnode = self.root
                 for nodename in _multisplit(k, nsprefix=nsprefix):
@@ -328,8 +341,8 @@ class MetadataTree(object):
         def _recur(node):
             if len(node.children) > 0:
                 for currentnode in node.children:
-                    if (len(currentnode.children) == 1) and ((currentnode.data == None) or (currentnode.data == '')) and not (currentnode.name.startswith('[')):
-                        currentnode.children[0].name = currentnode.name+'|'+currentnode.children[0].name
+                    if (len(currentnode.children) == 1) and ((currentnode.data == None) or (currentnode.data == u'')) and not (currentnode.name.startswith('[')):
+                        currentnode.children[0].name = currentnode.name+u'|'+currentnode.children[0].name
                         currentnode.children[0].parent = currentnode.parent
                         currentnode.parent.children[currentnode.parent.children.index(currentnode)] = currentnode.children[0]
                         #print currentnode.name

@@ -12,6 +12,14 @@ __contact__ = "henne@dcsec.uni-hannover.de"
 __copyright__ = "(c) 2012, B. Henne"
 __license__ = "GPLv3"
 
+def unifix(any):
+    """Workaround for some bad unicode exceptions / wrong encoded metadata"""
+    if any is None:
+        return u''
+    try:
+        return unicode(any)
+    except:
+        return unicode(any, errors='replace')
 
 class ImagePanel(wx.Panel):
     def __init__(self, parent, *args, **kwargs):
@@ -94,7 +102,7 @@ class MDTreePanel(wx.Panel):
         def _recur(datanode, treectrlnode):
             if len(datanode.children) > 0:
                 for currentdatanode in datanode.children:
-                    data = u': '+unicode(currentdatanode.data) if (currentdatanode.data is not None) and (unicode(currentdatanode.data) != u'') else u''
+                    data = u': '+unifix(currentdatanode.data) if (currentdatanode.data is not None) and (unifix(currentdatanode.data) != u'') else u''
                     child = self.tree.AppendItem(treectrlnode, currentdatanode.name+data)
                     self.tree.SetItemFont(child, f)
                     _recur(currentdatanode, child)
@@ -421,6 +429,7 @@ class MainWindow(wx.Frame):
                 self.mappanel.points = [[loc[0], loc[1]]]
                 self.mappanel.point_colours = ['red'] * len(self.mappanel.points)
                 #TODO: read location accuracy from GPSDOP and draw rectangle/circle
+                #    ! we cannot calculate any accuracy rectangle by any DOP
                 #self.mappanel.rectangles = [[0, 0, 1, 1]]
                 #self.mappanel.rectangle_colours = ['red']
                 self.mappanel.center = self.mappanel.points[0]
