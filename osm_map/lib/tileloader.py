@@ -15,7 +15,8 @@ METHOD = 'GET'
 
 LAYERS = {"tah": ["cassini.toolserver.org:8080", "/http://a.tile.openstreetmap.org/+http://toolserver.org/~cmarqu/hill/"],
           "oam": ["oam1.hypercube.telascience.org", "/tiles/1.0.0/openaerialmap-900913/"],
-          "mapnik": ["tile.openstreetmap.org", "/mapnik/"]
+          "mapnikold": ["tile.openstreetmap.org", "/mapnik/"],
+          "mapnik": ["c.tile.openstreetmap.org", "/"],
 }
 
 class TileLoader(asynchttp.AsyncHTTPConnection):
