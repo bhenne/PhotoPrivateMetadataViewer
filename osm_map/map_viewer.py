@@ -9,9 +9,8 @@ __license__ = "GPLv3"
 import os
 import platform
 import wx
-import asyncore
 from lib import tilenames as tiles
-from lib.tileloader import TileLoader
+from lib.tileloader2 import TileLoader
 from lib import calculations as calc
 
 TILE_SIZE = 256 # px
@@ -52,6 +51,7 @@ class MapPanel(wx.Panel):
         self.placeholder = self.placeholder.ConvertToBitmap()
         self.tiles = {}
         self.tiles_used = {}
+        self.tileloader = TileLoader(tile_list=self.tiles, cache_dir=cachedir)
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self._center_lat = 52.382463
@@ -73,18 +73,13 @@ class MapPanel(wx.Panel):
         self.current_point = 0
         self.current_rectangle = 0
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-        self.async_timer = wx.PyTimer(self.async_loop)
+        self.async_timer = wx.PyTimer(self.updateTiles)
         self.async_timer.Start(500, False)
 
-    def async_loop(self):
-        """Iterate through all open syncore sockets.
-        
-        This has to be a method so it can be scheduled. It has no other use.
-
-        """
-        if asyncore.socket_map:
-            asyncore.loop(count=1)
-            self.Refresh()
+    def updateTiles(self):
+        """Loads newly downloaded tiles from file"""
+        self.tileloader.load_images()
+	self.Refresh()
 
     def OnKeyDown(self, e):
         keycode = e.GetKeyCode()
@@ -153,6 +148,7 @@ class MapPanel(wx.Panel):
         e.Skip()
     
     def OnPaint(self, Event):
+        self.tileloader.load_images()
         dc = wx.AutoBufferedPaintDCFactory(self)
         dc.Clear()
         size = self.GetSize()
@@ -256,7 +252,7 @@ class MapPanel(wx.Panel):
         """Load an image from the cache folder or download it.
 
         Try to load from cache-folder first, download and cache if no image was found.
-        The image is placed in self.tiles by this method or by the TileLoader after downloading.
+        The image is placed in self.tiles by this method or by the TileLoader.load_images() after downloading.
 
         @param x: OSM-tile number in x-direction
         @type x: int
@@ -273,9 +269,7 @@ class MapPanel(wx.Panel):
 
         if not os.path.exists(os.path.join(self.cache_dir, *parts)):
             # Image is not cached yet. Create necessary folders and download image.
-            tl = TileLoader(self, x, y, z, layer)
-            #asyncore.loop(count=1)
-            asyncore.loop(count=1)
+            self.tileloader.enqueue_tile(x, y, z, layer)
             return
         image = wx.EmptyBitmap(1, 1)     # Create a bitmap container object. The size values are dummies.
         image.LoadFile(os.path.join(self.cache_dir, *parts), wx.BITMAP_TYPE_ANY)   # Load it with a file image.
